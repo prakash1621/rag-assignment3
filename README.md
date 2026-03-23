@@ -14,7 +14,7 @@ An agentic RAG system that intelligently routes queries, grades retrieved docume
 
 ---
 
-## Framework Choice: Why Custom Python (No LangGraph)
+## Framework Choice:   Custom Python (No LangGraph)
 
 | Framework | Pros | Cons | Verdict |
 |-----------|------|------|---------|
@@ -22,12 +22,7 @@ An agentic RAG system that intelligently routes queries, grades retrieved docume
 | **LlamaIndex** | Good for simple RAG, built-in retrievers | Less flexible for custom agentic loops | ❌ |
 | **Custom Python** | Full control, explicit flow, easy to debug, zero lock-in | Must build state management manually | ✅ |
 
-**Why custom Python:**
-1. 12 nodes with conditional branching — plain `if/else` and `while` loops are clearer than a graph DSL.
-2. State merging is a simple `_merge_state()` function — no `Annotated` reducers needed.
-3. Loop control is explicit: `retry_count < max_retries`. No hidden `recursion_limit`.
-4. Node functions are plain Python (dict → dict) — reusable with any orchestrator.
-5. Standard Python debugger works — no graph compilation step.
+ 
 
 ---
 
