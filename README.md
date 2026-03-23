@@ -66,25 +66,8 @@ Both strategies are implemented in `src/ingestion/chunker.py`.
 ## Project Structure
 
 ```
-├── README.md                       # Setup + design decisions
-├── requirements.txt                # Python dependencies
-├── .env.example                    # Environment variables template
-├── main.py                         # Streamlit UI (entry point)
-├── src/
-│   ├── graph.py                    # Full pipeline assembly (custom state machine)
-│   ├── ingestion/
-│   │   ├── loader.py               # Document scanner + text extractor (PDF, DOCX, MD, HTML, TXT)
-│   │   ├── chunker.py              # Chunking strategies (parent-child, semantic, basic)
-│   │   └── indexer.py              # FAISS vector store create/save/load
-│   └── nodes/
-│       └── nodes.py                # Router, retriever, grader, rewriter, generator, fallback
-├── vector_store/                   # Persisted FAISS index
-│   ├── index.faiss
-│   └── index.pkl
-└── knowledge-base/                 # Source documents (≥3 docs per category)
-    ├── avaya/                      # Avaya call center module (9 files)
-    ├── bppsl/                      # Booking/fare proration (9 files)
-    └── dot/                        # DOT fare/currency (10 files)
+![img_1.png](img_1.png)
+                  
 ```
 
 ---
