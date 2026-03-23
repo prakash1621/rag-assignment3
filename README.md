@@ -87,7 +87,12 @@ The Streamlit app provides a chat interface that demonstrates all 3 pipeline bra
 - Branch 3: Web search fallback (Tavily)
 
 Agent trace is visible in the UI for each query.
-
+Output 
+![output_2.png](..%2Foutput_2.png)
+![Output_4.png](..%2FOutput_4.png)
+![Output_3.png](..%2FOutput_3.png)
+![Output_5.png](..%2FOutput_5.png)
+![Output_1.png](..%2FOutput_1.png)
 ---
 
 ## Tech Stack
