@@ -108,9 +108,4 @@ Agent trace is visible in the UI for each query.
 
 ---
 
-## References
-
-- [Self-RAG — Asai et al., 2023](https://arxiv.org/abs/2310.11511)
-- [Corrective RAG — Yan et al., 2024](https://arxiv.org/abs/2401.15884)
-- [Adaptive RAG — Jeong et al., 2024](https://arxiv.org/abs/2403.14403)
-- [LangGraph Agentic RAG Tutorial](https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_agentic_rag/) (reference studied, not copied)
+ 
