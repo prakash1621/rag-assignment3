@@ -88,11 +88,11 @@ The Streamlit app provides a chat interface that demonstrates all 3 pipeline bra
 
 Agent trace is visible in the UI for each query.
 Output 
-![output_2.png](..%2Foutput_2.png)
-![Output_4.png](..%2FOutput_4.png)
-![Output_3.png](..%2FOutput_3.png)
-![Output_5.png](..%2FOutput_5.png)
-![Output_1.png](..%2FOutput_1.png)
+ ![Output_1.png](Output_1.png)
+![output_2.png](output_2.png)
+![Output_3.png](Output_3.png)
+![Output_4.png](Output_4.png)
+![Output_5.png](Output_5.png)
 ---
 
 ## Tech Stack
