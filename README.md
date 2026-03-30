@@ -81,60 +81,8 @@ Max 3 retries on hallucination/quality failures. The `retry_count` field in stat
 ## Project Structure
 
 ```
-Sathvik/
-├── README.md                       # This file
-├── requirements.txt                # Python dependencies
-├── .env.example                    # Environment variables template
-├── config.yaml                     # Pipeline configuration
-├── main.py                         # Streamlit UI entry point
-│
-├── src/                            # Source code
-│   ├── graph.py                    # ★ Full pipeline assembly (assignment entry point)
-│   ├── ingestion/                  # ★ Loader, chunker, indexer
-│   │   ├── loader.py               #   Document scanner + text extractor
-│   │   ├── chunker.py              #   Chunking strategies (parent-child, semantic)
-│   │   └── indexer.py              #   FAISS vector store create/save/load
-│   ├── nodes/                      # ★ All agentic decision nodes
-│   │   └── __init__.py             #   Router, grader, rewriter, generator, fallback
-│   ├── agentic/                    # Core agentic RAG implementation
-│   │   ├── graph.py                #   LangGraph state machine (12 nodes)
-│   │   ├── nodes.py                #   Node implementations
-│   │   └── state.py                #   Typed state with Annotated reducers
-│   ├── chunking/                   # Document chunking strategies
-│   │   ├── parent_child.py         #   Parent-child chunking
-│   │   └── semantic_chunker.py     #   Semantic chunking
-│   ├── caching/                    # Semantic cache (bonus feature)
-│   │   ├── semantic_cache.py       #   Embedding similarity cache (≥0.95)
-│   │   └── cache_manager.py        #   Cache interface
-│   ├── retrieval/                  # Document retrieval
-│   │   ├── retriever.py            #   FAISS retrieval with category detection
-│   │   └── reranker.py             #   Embedding-based reranking
-│   ├── generation/                 # LLM generation
-│   │   └── generator.py            #   AWS Bedrock (Claude 3 Haiku)
-│   ├── utils/                      # Utilities
-│   │   ├── config_loader.py        #   YAML config loader
-│   │   ├── embeddings.py           #   Titan embedding wrapper
-│   │   └── logger.py               #   Logging setup
-│   └── pipeline.py                 # Pipeline orchestration (agentic)
-│
-├── app/                            # Shared utilities (config, ingestion, embeddings)
-│   ├── config.py                   #   Constants and category keywords
-│   ├── ingestion.py                #   Document loader (PDF, DOCX, MD)
-│   └── embedding.py                #   Vector store create/save/load
-│
-├── notebooks/
-│   └── demo.ipynb                  # End-to-end demo (all 3 branches)
-│
-├── evaluation/
-│   └── results.md                  # Test cases + metrics (7 test cases)
-│
-├── knowledge-base/                 # Source documents by category
-│   ├── avaya/                      # Avaya call center module
-│   ├── bppsl/                      # Booking/fare proration
-│   └── dot/                        # DOT fare/currency
-│
-├── vector_store/                   # FAISS index (generated)
-└── cache/                          # Semantic cache DB (generated)
+![img_3.png](img_3.png)
+ 
 ```
 
 ---
