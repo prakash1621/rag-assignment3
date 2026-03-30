@@ -1,1 +1,1 @@
-# Agentic RAG Pipeline Package
+# RAG Pipeline Package

@@ -1,0 +1,401 @@
+warning: in the working copy of '.env.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'requirements.txt', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/.env.example b/.env.example[m
+[1mindex f2d4479..9eac1f6 100644[m
+[1m--- a/.env.example[m
+[1m+++ b/.env.example[m
+[36m@@ -1,11 +1,37 @@[m
+[31m-# AWS Credentials (required)[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# AWS Credentials (REQUIRED)[m
+[32m+[m[32m# ============================================[m
+ AWS_ACCESS_KEY_ID=your_access_key_here[m
+ AWS_SECRET_ACCESS_KEY=your_secret_key_here[m
+ AWS_DEFAULT_REGION=us-east-1[m
+ [m
+[31m-# AWS Bedrock Models[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# AWS Bedrock Configuration[m
+[32m+[m[32m# ============================================[m
+ AWS_EMBEDDING_MODEL=amazon.titan-embed-text-v1[m
+ AWS_LLM_MODEL=anthropic.claude-3-haiku-20240307-v1:0[m
+ [m
+[31m-# Web Search Fallback (optional — get key from https://tavily.com)[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# Paths[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32mVECTOR_STORE_PATH=vector_store[m
+[32m+[m[32mKNOWLEDGE_BASE_PATH=knowledge-base[m
+[32m+[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# Logging[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32mLOG_LEVEL=INFO[m
+[32m+[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# Agentic RAG: Web Search Fallback (Tavily)[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# Get your API key from https://tavily.com[m
+ TAVILY_API_KEY=your_tavily_api_key_here[m
+[32m+[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# IMPORTANT NOTES[m
+[32m+[m[32m# ============================================[m
+[32m+[m[32m# 1. Never commit this file with real credentials[m
+[32m+[m[32m# 2. Copy this file to .env and fill in your values[m
+[32m+[m[32m# 3. Add .env to .gitignore[m
+[32m+[m[32m# 4. Ensure AWS credentials have Bedrock access permissions[m
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex ff101bb..9fdddb5 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -64,8 +64,9 @@[m [mvector_store/[m
+ .DS_Store[m
+ Thumbs.db[m
+ [m
+[31m-# Data files[m
+[31m-data/[m
+[32m+[m[32m# Data files (don't commit large documents)[m
+[32m+[m[32mdata/*[m
+[32m+[m[32m!data/.gitkeep[m
+ [m
+ # Knowledge base (optional - depends on your setup)[m
+ # knowledge-base/[m
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 9572202..c866575 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -2,97 +2,272 @@[m
+ [m
+ **Assignment 3 — RAG Architect 2026**[m
+ [m
+[31m-An agentic RAG system that intelligently routes queries, grades retrieved documents, rewrites failed queries, falls back to web search, and self-checks answers for hallucinations and quality — all orchestrated as a custom Python state machine with no framework dependencies.[m
+[32m+[m[32mA production-grade agentic RAG system that goes beyond basic retrieve-and-generate. The pipeline intelligently routes queries, grades retrieved documents, rewrites failed queries, falls back to web search, and self-checks answers for hallucinations and quality — all orchestrated as a LangGraph state machine.[m
+ [m
+[31m-**Stack:** Custom Python pipeline · AWS Bedrock (Claude 3 Haiku + Titan Embeddings) · FAISS · Tavily[m
+[32m+[m[32m**Stack:** LangGraph · AWS Bedrock (Claude 3 Haiku + Titan Embeddings) · FAISS · Tavily · Streamlit[m
+ [m
+ ---[m
+ [m
+ ## Architecture[m
+[31m-![img.png](img.png)[m
+[32m+[m
+[32m+[m[32m```[m
+[32m+[m[32mUser Query[m
+[32m+[m[32m    │[m
+[32m+[m[32m    ▼[m
+[32m+[m[32m┌──────────────────────────────────────────────────────────────────┐[m
+[32m+[m[32m│  🔴 Semantic Cache (cosine ≥ 0.95)                               │[m
+[32m+[m[32m│     Similar past query? → Return cached response (skip pipeline) │[m
+[32m+[m[32m└──────────────────────────────────────────────────────────────────┘[m
+[32m+[m[32m    │ Cache miss[m
+[32m+[m[32m    ▼[m
+[32m+[m[32m┌──────────────────────────────────────────────────────────────────┐[m
+[32m+[m[32m│  🔵 ADAPTIVE RAG: Query Router (LLM-powered)                    │[m
+[32m+[m[32m│     Classifies → vectorstore | direct_llm | web_search          │[m
+[32m+[m[32m└──────────────────────────────────────────────────────────────────┘[m
+[32m+[m[32m    │                    │                    │[m
+[32m+[m[32m    ▼                    ▼                    ▼[m
+[32m+[m[32m┌──────────┐    ┌──────────────┐    ┌──────────────┐[m
+[32m+[m[32m│ 🟣 Direct │    │ 🔵 Vectorstore│    │ 🌐 Web Search │[m
+[32m+[m[32m│   LLM     │    │   Path       │    │   (Tavily)    │[m
+[32m+[m[32m│  (no RAG) │    │              │    │               │[m
+[32m+[m[32m└──────────┘    └──────────────┘    └──────────────┘[m
+[32m+[m[32m    │                    │                    │[m
+[32m+[m[32m    ▼                    ▼                    ▼[m
+[32m+[m[32m   END          ┌──────────────┐        Generate[m
+[32m+[m[32m                │ ✏️ Rewriter   │            │[m
+[32m+[m[32m                │ (chat context)│            ▼[m
+[32m+[m[32m                └──────────────┘      Self-RAG checks[m
+[32m+[m[32m                        │                    │[m
+[32m+[m[32m                        ▼                   END[m
+[32m+[m[32m                ┌──────────────┐[m
+[32m+[m[32m                │ 📥 Retrieve   │[m
+[32m+[m[32m                │  (FAISS, k=10)│[m
+[32m+[m[32m                └──────────────┘[m
+[32m+[m[32m                        │[m
+[32m+[m[32m                        ▼[m
+[32m+[m[32m                ┌──────────────────────────────────────┐[m
+[32m+[m[32m                │ 🟢 CORRECTIVE RAG: Grade Documents    │[m
+[32m+[m[32m                │     LLM grades each doc (relevant?)   │[m
+[32m+[m[32m                └──────────────────────────────────────┘[m
+[32m+[m[32m                   │                          │[m
+[32m+[m[32m                   ▼                          ▼[m
+[32m+[m[32m              Has relevant docs         All irrelevant[m
+[32m+[m[32m                   │                          │[m
+[32m+[m[32m                   ▼                     ┌────┴────┐[m
+[32m+[m[32m              📊 Rerank                  │ 1st try? │[m
+[32m+[m[32m                   │                     ├─ Yes ────→ 🔄 Corrective Rewrite → Retrieve (retry)[m
+[32m+[m[32m                   ▼                     └─ No ─────→ 🌐 Web Search fallback[m
+[32m+[m[32m              ⚡ Generate[m
+[32m+[m[32m                   │[m
+[32m+[m[32m                   ▼[m
+[32m+[m[32m                ┌──────────────────────────────────────┐[m
+[32m+[m[32m                │ 🟡 SELF-RAG: Hallucination Check      │[m
+[32m+[m[32m                │     Is answer grounded in sources?     │[m
+[32m+[m[32m                │     ↓ No → retry (max 3)               │[m
+[32m+[m[32m                └──────────────────────────────────────┘[m
+[32m+[m[32m                        │[m
+[32m+[m[32m                        ▼[m
+[32m+[m[32m                ┌──────────────────────────────────────┐[m
+[32m+[m[32m                │ 🟡 SELF-RAG: Answer Quality Grader    │[m
+[32m+[m[32m                │     Does answer address the question?  │[m
+[32m+[m[32m                │     ↓ No → retry (max 3)               │[m
+[32m+[m[32m                └──────────────────────────────────────┘[m
+[32m+[m[32m                        │[m
+[32m+[m[32m                        ▼[m
+[32m+[m[32m                      END[m
+ ```[m
+ [m
+ ---[m
+ [m
+[31m-## Framework Choice:   Custom Python (No LangGraph)[m
+[32m+[m[32m## Framework Choice: Why LangGraph[m
+[32m+[m
+[32m+[m[32mWe evaluated three options:[m
+ [m
+ | Framework | Pros | Cons | Verdict |[m
+ |-----------|------|------|---------|[m
+[31m-| **LangGraph** | Native state management, conditional edges, built-in retry limits | Heavy dependency, hides control flow, harder to debug | ❌ |[m
+[31m-| **LlamaIndex** | Good for simple RAG, built-in retrievers | Less flexible for custom agentic loops | ❌ |[m
+[31m-| **Custom Python** | Full control, explicit flow, easy to debug, zero lock-in | Must build state management manually | ✅ |[m
+[32m+[m[32m| **LangGraph** | Native state management, conditional edges, built-in retry/recursion limits, typed state with reducers | Slightly more boilerplate than raw Python | ✅ **Chosen** |[m
+[32m+[m[32m| **LlamaIndex** | Good for simple RAG, built-in retrievers | Less flexible for custom agentic loops, harder to add conditional branching | ❌ |[m
+[32m+[m[32m| **Custom Python** | Full control, no dependencies | Must build state management, loop control, and graph execution from scratch | ❌ |[m
+ [m
+[31m- [m
+[32m+[m[32m**Why LangGraph won:**[m
+[32m+[m[32m1. The pipeline has 12 nodes with conditional branching — LangGraph's `StateGraph` + `add_conditional_edges` maps directly to this.[m
+[32m+[m[32m2. The `Annotated` typed state with reducers (`replace_value`, `merge_list`) prevents state corruption when nodes return partial updates.[m
+[32m+[m[32m3. Built-in `recursion_limit` provides a safety net against infinite loops without manual tracking.[m
+[32m+[m[32m4. The graph compiles to a runnable that can be invoked with a single `graph.invoke()` call.[m
+ [m
+ ---[m
+ [m
+[31m-## Chunking Strategy: Parent-Child + Semantic[m
+[32m+[m[32m## Chunking Strategy: Why Parent-Child + Semantic[m
+[32m+[m
+[32m+[m[32mTwo chunking strategies are available, selectable from the sidebar:[m
+ [m
+ **Parent-Child Chunking (default):**[m
+[31m-- Parent chunks: 3000 chars / 500 overlap — broad context for the LLM[m
+[31m-- Child chunks: 500 chars / 100 overlap — precise embedding search[m
+[31m-- Retrieval searches children, parent context passed to LLM[m
+[32m+[m[32m- Parent chunks: 3000 chars with 500 overlap — provides broad context to the LLM[m
+[32m+[m[32m- Child chunks: 500 chars with 100 overlap — used for precise embedding similarity search[m
+[32m+[m[32m- Retrieval searches children, but the parent chunk is passed to the LLM for generation[m
+[32m+[m[32m- Best for: structured documents with clear sections (our KB has project docs with headers)[m
+ [m
+ **Semantic Chunking:**[m
+[31m-- Embedding cosine similarity detects natural topic boundaries[m
+[31m-- Variable-length chunks that respect semantic coherence[m
+[31m-- Best for unstructured text where fixed-size splitting breaks mid-concept[m
+[32m+[m[32m- Uses embedding cosine similarity to detect natural topic boundaries[m
+[32m+[m[32m- Buffer size of 1 sentence, percentile-based breakpoint at 95th percentile[m
+[32m+[m[32m- Produces variable-length chunks that respect semantic coherence[m
+[32m+[m[32m- Best for: unstructured text where fixed-size splitting would break mid-concept[m
+ [m
+[31m-Both strategies are implemented in `src/ingestion/chunker.py`.[m
+[32m+[m[32m**Why both?** Different document types benefit from different strategies. Project overview docs with clear sections work well with parent-child. Dense technical docs with flowing prose work better with semantic chunking. The user can switch strategies and rebuild the KB to compare.[m
+ [m
+ ---[m
+ [m
+ ## Design Trade-offs[m
+ [m
+[31m-1. **Quality vs Latency** — 5-7 LLM calls per query (~10-15s) vs 1 call for standard RAG (~3s). The quality improvement (catching bad retrievals and hallucinations) justifies the cost.[m
+[32m+[m[32m### 1. Quality vs Latency[m
+[32m+[m[32mThe agentic pipeline makes 5-7 LLM calls per query (router, grader ×N, generator, hallucination check, answer grader) vs 1 call for standard RAG. This increases latency from ~3s to ~10-15s but catches bad retrievals and hallucinations.[m
+ [m
+[31m-2. **Grader Prompt Framing** — Claude Haiku defaults to "no" on ambiguous yes/no. Using "should this doc be EXCLUDED?" instead of "is this relevant?" fixed false negatives.[m
+[32m+[m[32m**Mitigation:** Semantic caching. Repeated/similar queries hit cache in <100ms, amortizing the cost over time.[m
+ [m
+[31m-3. **Multi-Category Retrieval** — Per-category FAISS search with balanced reranking prevents one category from dominating comparison queries.[m
+[32m+[m[32m### 2. Grader Prompt: Exclusion vs Inclusion Framing[m
+[32m+[m[32mClaude Haiku defaults to "no" on ambiguous yes/no questions. When we asked "is this document relevant?", the grader marked most docs as irrelevant (false negatives). Flipping to "should this document be EXCLUDED?" fixed this — now the default "no" means "don't exclude" = relevant.[m
+ [m
+[31m-4. **Conversational Context** — Query rewriter uses last 4 chat messages to resolve references ("explain the first one") before retrieval.[m
+[32m+[m[32m### 3. Multi-Category Retrieval[m
+[32m+[m[32mA single FAISS similarity search for "compare Avaya and DOT" returns docs from whichever category has stronger embedding overlap, starving the other. We split into per-category retrieval (k/N per category) with category-balanced reranking to ensure coverage.[m
+ [m
+[31m-5. **Web Search Safety Net** — Tavily fallback when corrective rewrite + retry still fails.[m
+[32m+[m[32m### 4. Conversational Context[m
+[32m+[m[32mFollow-up questions like "explain the first one" fail without context. The conversational query rewriter uses the last 4 chat messages to resolve references before retrieval. This adds one LLM call but prevents complete retrieval failures on follow-ups.[m
+ [m
+[31m-6. **Loop Control** — Max 3 retries on hallucination/quality failures. `retry_count` increments on each failure; system always terminates gracefully.[m
+[32m+[m[32m### 5. Web Search as Safety Net[m
+[32m+[m[32mWhen the corrective rewrite + retry still fails, Tavily web search provides a last-resort answer. This prevents the system from returning "I don't know" on queries that are slightly outside the KB but answerable from the web.[m
+[32m+[m
+[32m+[m[32m### 6. Loop Control[m
+[32m+[m[32mMax 3 retries on hallucination/quality failures. The `retry_count` field in state increments on each failure, and conditional edges check it before looping. Combined with LangGraph's `recursion_limit: 50`, the system always terminates.[m
+ [m
+ ---[m
+ [m
+ ## Project Structure[m
+ [m
+ ```[m
+[31m-![img_1.png](img_1.png)[m
+[31m-                  [m
+[32m+[m[32mSathvik/[m
+[32m+[m[32m├── README.md                       # This file[m
+[32m+[m[32m├── requirements.txt                # Python dependencies[m
+[32m+[m[32m├── .env.example                    # Environment variables template[m
+[32m+[m[32m├── config.yaml                     # Pipeline configuration[m
+[32m+[m[32m├── main.py                         # Streamlit UI entry point[m
+[32m+[m[32m│[m
+[32m+[m[32m├── src/                            # Source code[m
+[32m+[m[32m│   ├── graph.py                    # ★ Full pipeline assembly (assignment entry point)[m
+[32m+[m[32m│   ├── ingestion/                  # ★ Loader, chunker, indexer[m
+[32m+[m[32m│   │   ├── loader.py               #   Document scanner + text extractor[m
+[32m+[m[32m│   │   ├── chunker.py              #   Chunking strategies (parent-child, semantic)[m
+[32m+[m[32m│   │   └── indexer.py              #   FAISS vector store create/save/load[m
+[32m+[m[32m│   ├── nodes/                      # ★ All agentic decision nodes[m
+[32m+[m[32m│   │   └── __init__.py             #   Router, grader, rewriter, generator, fallback[m
+[32m+[m[32m│   ├── agentic/                    # Core agentic RAG implementation[m
+[32m+[m[32m│   │   ├── graph.py                #   LangGraph state machine (12 nodes)[m
+[32m+[m[32m│   │   ├── nodes.py                #   Node implementations[m
+[32m+[m[32m│   │   └── state.py                #   Typed state with Annotated reducers[m
+[32m+[m[32m│   ├── chunking/                   # Document chunking strategies[m
+[32m+[m[32m│   │   ├── parent_child.py         #   Parent-child chunking[m
+[32m+[m[32m│   │   └── semantic_chunker.py     #   Semantic chunking[m
+[32m+[m[32m│   ├── caching/                    # Semantic cache (bonus feature)[m
+[32m+[m[32m│   │   ├── semantic_cache.py       #   Embedding similarity cache (≥0.95)[m
+[32m+[m[32m│   │   └── cache_manager.py        #   Cache interface[m
+[32m+[m[32m│   ├── retrieval/                  # Document retrieval[m
+[32m+[m[32m│   │   ├── retriever.py            #   FAISS retrieval with category detection[m
+[32m+[m[32m│   │   └── reranker.py             #   Embedding-based reranking[m
+[32m+[m[32m│   ├── generation/                 # LLM generation[m
+[32m+[m[32m│   │   └── generator.py            #   AWS Bedrock (Claude 3 Haiku)[m
+[32m+[m[32m│   ├── utils/                      # Utilities[m
+[32m+[m[32m│   │   ├── config_loader.py        #   YAML config loader[m
+[32m+[m[32m│   │   ├── embeddings.py           #   Titan embedding wrapper[m
+[32m+[m[32m│   │   └── logger.py               #   Logging setup[m
+[32m+[m[32m│   └── pipeline.py                 # Pipeline orchestration (agentic)[m
+[32m+[m[32m│[m
+[32m+[m[32m├── app/                            # Shared utilities (config, ingestion, embeddings)[m
+[32m+[m[32m│   ├── config.py                   #   Constants and category keywords[m
+[32m+[m[32m│   ├── ingestion.py                #   Document loader (PDF, DOCX, MD)[m
+[32m+[m[32m│   └── embedding.py                #   Vector store create/save/load[m
+[32m+[m[32m│[m
+[32m+[m[32m├── notebooks/[m
+[32m+[m[32m│   └── demo.ipynb                  # End-to-end demo (all 3 branches)[m
+[32m+[m[32m│[m
+[32m+[m[32m├── evaluation/[m
+[32m+[m[32m│   └── results.md                  # Test cases + metrics (7 test cases)[m
+[32m+[m[32m│[m
+[32m+[m[32m├── knowledge-base/                 # Source documents by category[m
+[32m+[m[32m│   ├── avaya/                      # Avaya call center module[m
+[32m+[m[32m│   ├── bppsl/                      # Booking/fare proration[m
+[32m+[m[32m│   └── dot/                        # DOT fare/currency[m
+[32m+[m[32m│[m
+[32m+[m[32m├── vector_store/                   # FAISS index (generated)[m
+[32m+[m[32m└── cache/                          # Semantic cache DB (generated)[m
+ ```[m
+ [m
+ ---[m
+ [m
+ ## Quick Start[m
+ [m
+[32m+[m[32m### Prerequisites[m
+[32m+[m[32m- Python 3.8+[m
+[32m+[m[32m- AWS account with Bedrock access (Claude 3 Haiku + Titan Embeddings)[m
+[32m+[m[32m- AWS credentials configured (`~/.aws/credentials` or environment variables)[m
+[32m+[m
+[32m+[m[32m### Installation[m
+[32m+[m
+ ```bash[m
+[32m+[m[32m# Clone and install[m
+[32m+[m[32mgit clone <your-repo-url>[m
+[32m+[m[32mcd Sathvik[m
+ pip install -r requirements.txt[m
+[32m+[m
+[32m+[m[32m# Configure environment[m
+ cp .env.example .env[m
+ # Edit .env with your AWS credentials and optionally TAVILY_API_KEY[m
+ ```[m
+ [m
+[31m-### Streamlit UI[m
+[32m+[m[32m### Run[m
+ [m
+ ```bash[m
+ streamlit run main.py[m
+ ```[m
+ [m
+[31m-The Streamlit app provides a chat interface that demonstrates all 3 pipeline branches with source citations:[m
+[31m-- Branch 1: Vectorstore retrieval (Adaptive → Corrective → Self-RAG)[m
+[31m-- Branch 2: Direct LLM (no retrieval)[m
+[31m-- Branch 3: Web search fallback (Tavily)[m
+[31m-[m
+[31m-Agent trace is visible in the UI for each query.[m
+[31m-Output [m
+[31m- ![Output_1.png](Output_1.png)[m
+[31m-![output_2.png](output_2.png)[m
+[31m-![Output_3.png](Output_3.png)[m
+[31m-![Output_4.png](Output_4.png)[m
+[31m-![Output_5.png](Output_5.png)[m
+[32m+[m[32m1. Open `http://localhost:8501`[m
+[32m+[m[32m2. Click "Rebuild Knowledge Base" in the sidebar[m
+[32m+[m[32m3. Start asking questions — the agentic pipeline handles routing, grading, and self-reflection automatically[m
+[32m+[m
+[32m+[m[32m### Demo Notebook[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mcd notebooks[m
+[32m+[m[32mjupyter notebook demo.ipynb[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Bonus Features Implemented[m
+[32m+[m
+[32m+[m[32m| Feature | Points | Implementation |[m
+[32m+[m[32m|---------|--------|---------------|[m
+[32m+[m[32m| Advanced chunking (parent-child + semantic) | +10 | `src/chunking/` — two strategies, switchable from sidebar |[m
+[32m+[m[32m| Semantic cache (cosine ≥ 0.95) | +10 | `src/caching/semantic_cache.py` — skips pipeline on similar past queries |[m
+[32m+[m[32m| 3-tier router | +10 | `src/agentic/nodes.py` — LLM classifies as direct_llm / vectorstore / web_search |[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Configuration[m
+[32m+[m
+[32m+[m[32mAll settings in `config.yaml`:[m
+[32m+[m
+[32m+[m[32m```yaml[m
+[32m+[m[32m# Key settings[m
+[32m+[m[32mchunking:[m
+[32m+[m[32m  parent_child: { parent_size: 3000, child_size: 500 }[m
+[32m+[m[32m  semantic: { breakpoint_threshold_amount: 95 }[m
+[32m+[m
+[32m+[m[32mcaching:[m
+[32m+[m[32m  semantic: { similarity_threshold: 0.95, ttl_seconds: 3600 }[m
+[32m+[m
+[32m+[m[32magentic:[m
+[32m+[m[32m  max_retries: 2[m
+[32m+[m[32m```[m
+[32m+[m
+ ---[m
+ [m
+ ## Tech Stack[m
+[36m@@ -102,10 +277,17 @@[m [mOutput[m
+ | LLM | AWS Bedrock — Claude 3 Haiku |[m
+ | Embeddings | AWS Bedrock — Amazon Titan Embed Text v1 |[m
+ | Vector Store | FAISS (faiss-cpu) |[m
+[31m-| Framework | Custom Python (no LangGraph) |[m
+[32m+[m[32m| Agentic Framework | LangGraph |[m
+ | Web Search | Tavily |[m
+[31m-| Orchestration | LangChain (minimal — prompts + Bedrock client) |[m
+[32m+[m[32m| Caching | Semantic cache (in-memory, cosine ≥ 0.95) |[m
+[32m+[m[32m| UI | Streamlit |[m
+[32m+[m[32m| Orchestration | LangChain (minimal — prompts, Bedrock client) |[m
+ [m
+ ---[m
+ [m
+[31m- [m
+\ No newline at end of file[m
+[32m+[m[32m## References[m
+[32m+[m
+[32m+[m[32m- [Self-RAG — Asai et al., 2023](https://arxiv.org/abs/2310.11511)[m
+[32m+[m[32m- [Corrective RAG — Yan et al., 2024](https://arxiv.org/abs/2401.15884)[m
+[32m+[m[32m- [Adaptive RAG — Jeong

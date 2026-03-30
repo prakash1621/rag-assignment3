@@ -64,8 +64,9 @@ vector_store/
 .DS_Store
 Thumbs.db
 
-# Data files
-data/
+# Data files (don't commit large documents)
+data/*
+!data/.gitkeep
 
 # Knowledge base (optional - depends on your setup)
 # knowledge-base/

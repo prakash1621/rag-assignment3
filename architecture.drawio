@@ -1,0 +1,261 @@
+<mxfile host="app.diagrams.net" modified="2025-01-01T00:00:00.000Z" agent="draw.io" version="24.0.0" type="device">
+  <diagram id="agentic-rag-pipeline" name="Agentic RAG Architecture">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- User Query -->
+        <mxCell id="user_query" value="🧑 User Query" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="30" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Semantic Cache -->
+        <mxCell id="cache" value="🔴 Semantic Cache&#xa;(cosine ≥ 0.95)&#xa;Similar past query? → Return cached response" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="120" width="360" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_cache" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="user_query" target="cache" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Cache Hit END -->
+        <mxCell id="cache_hit_end" value="✅ Return&#xa;Cached Response" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="870" y="125" width="130" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cache_hit" value="Cache Hit" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="cache" target="cache_hit_end" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Query Router -->
+        <mxCell id="router" value="🔵 ADAPTIVE RAG: Query Router (LLM-powered)&#xa;Classifies → vectorstore | direct_llm | web_search" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="440" y="240" width="400" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_cache_router" value="Cache Miss" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="cache" target="router" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Direct LLM -->
+        <mxCell id="direct_llm" value="🟣 Direct LLM&#xa;(no RAG)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="160" y="420" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_router_direct" value="direct_llm" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="router" target="direct_llm" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Direct LLM END -->
+        <mxCell id="direct_end" value="END" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="195" y="520" width="80" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_direct_end" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="direct_llm" target="direct_end" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Vectorstore Path -->
+        <mxCell id="vectorstore" value="🔵 Vectorstore Path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="420" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_router_vs" value="vectorstore" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="router" target="vectorstore" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Web Search (from router) -->
+        <mxCell id="web_search_router" value="🌐 Web Search&#xa;(Tavily)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="870" y="420" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_router_web" value="web_search" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="router" target="web_search_router" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Web Search Generate -->
+        <mxCell id="web_generate" value="⚡ Generate&#xa;(from web docs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="870" y="520" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_web_gen" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="web_search_router" target="web_generate" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Web Self-RAG -->
+        <mxCell id="web_selfrag" value="🟡 Self-RAG Checks&#xa;(Hallucination + Quality)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="610" width="190" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_webgen_selfrag" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="web_generate" target="web_selfrag" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Web END -->
+        <mxCell id="web_end" value="END" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="905" y="700" width="80" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_web_end" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="web_selfrag" target="web_end" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Rewriter -->
+        <mxCell id="rewriter" value="✏️ Conversational Rewriter&#xa;(uses last 4 chat messages)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="520" y="510" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_vs_rewriter" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="vectorstore" target="rewriter" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Retrieve -->
+        <mxCell id="retrieve" value="📥 Retrieve&#xa;(FAISS, k=10, per-category)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="600" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_rewriter_retrieve" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="rewriter" target="retrieve" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Grade Documents -->
+        <mxCell id="grader" value="🟢 CORRECTIVE RAG: Grade Documents&#xa;LLM grades each doc (relevant?)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="700" width="360" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_retrieve_grader" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="retrieve" target="grader" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Rerank -->
+        <mxCell id="rerank" value="📊 Rerank&#xa;(embedding-based)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="370" y="880" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_grader_rerank" value="Has relevant docs" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="grader" target="rerank" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- All Irrelevant Decision -->
+        <mxCell id="irrelevant_decision" value="1st try?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="700" y="870" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_grader_irrelevant" value="All irrelevant" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="grader" target="irrelevant_decision" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Corrective Rewrite -->
+        <mxCell id="corrective_rewrite" value="🔄 Corrective&#xa;Rewrite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="870" y="830" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_irr_rewrite" value="Yes" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="irrelevant_decision" target="corrective_rewrite" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Corrective Rewrite loops back to Retrieve -->
+        <mxCell id="e_corrective_retrieve" value="Retry" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;curved=1;" edge="1" source="corrective_rewrite" target="retrieve" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1060" y="855"/>
+              <mxPoint x="1060" y="625"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Web Search Fallback -->
+        <mxCell id="web_fallback" value="🌐 Web Search&#xa;Fallback (Tavily)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="870" y="920" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_irr_web" value="No (2nd fail)" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="irrelevant_decision" target="web_fallback" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Generate (main vectorstore path) -->
+        <mxCell id="generate" value="⚡ Generate&#xa;(Claude 3 Haiku via Bedrock)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="370" y="980" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_rerank_generate" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="rerank" target="generate" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Hallucination Check -->
+        <mxCell id="hallucination" value="🟡 SELF-RAG: Hallucination Check&#xa;Is answer grounded in sources?&#xa;↓ No → retry (max 3)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="1080" width="340" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_gen_halluc" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="generate" target="hallucination" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Hallucination retry loop back to Generate -->
+        <mxCell id="e_halluc_retry" value="No (retry)" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;dashed=1;curved=1;" edge="1" source="hallucination" target="generate" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="1140"/>
+              <mxPoint x="280" y="1005"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Answer Quality Grader -->
+        <mxCell id="quality" value="🟡 SELF-RAG: Answer Quality Grader&#xa;Does answer address the question?&#xa;↓ No → retry (max 3)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="1250" width="340" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_halluc_quality" value="Yes (grounded)" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="hallucination" target="quality" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Quality retry loop back to Generate -->
+        <mxCell id="e_quality_retry" value="No (retry)" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;dashed=1;curved=1;" edge="1" source="quality" target="generate" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="1310"/>
+              <mxPoint x="230" y="1005"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Final END -->
+        <mxCell id="final_end" value="✅ END" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1420" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_quality_end" value="Yes (useful)" style="edgeStyle=orthogonalEdgeStyle;fontStyle=2;fontSize=10;" edge="1" source="quality" target="final_end" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Web fallback also goes to generate/end -->
+        <mxCell id="e_webfallback_gen" value="" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="web_fallback" target="generate" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="940" y="1005"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="30" y="30" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_title" value="Legend" style="text;html=1;fontSize=13;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="90" y="35" width="80" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="45" y="65" width="20" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1t" value="Cache / Corrective" style="text;html=1;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="75" y="62" width="140" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2" value="" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="45" y="90" width="20" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2t" value="Adaptive RAG / Vectorstore" style="text;html=1;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="75" y="87" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3" value="" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="45" y="115" width="20" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3t" value="Corrective RAG / Generate" style="text;html=1;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="75" y="112" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4" value="" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="45" y="140" width="20" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4t" value="Self-RAG / Web Search" style="text;html=1;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="75" y="137" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5" value="" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="45" y="165" width="20" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5t" value="Direct LLM (no RAG)" style="text;html=1;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="75" y="162" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
