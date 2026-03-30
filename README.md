@@ -10,72 +10,9 @@ A production-grade agentic RAG system that goes beyond basic retrieve-and-genera
 
 ## Architecture
 
+![img_2.png](img_2.png)
 ```
-User Query
-    │
-    ▼
-┌──────────────────────────────────────────────────────────────────┐
-│  🔴 Semantic Cache (cosine ≥ 0.95)                               │
-│     Similar past query? → Return cached response (skip pipeline) │
-└──────────────────────────────────────────────────────────────────┘
-    │ Cache miss
-    ▼
-┌──────────────────────────────────────────────────────────────────┐
-│  🔵 ADAPTIVE RAG: Query Router (LLM-powered)                    │
-│     Classifies → vectorstore | direct_llm | web_search          │
-└──────────────────────────────────────────────────────────────────┘
-    │                    │                    │
-    ▼                    ▼                    ▼
-┌──────────┐    ┌──────────────┐    ┌──────────────┐
-│ 🟣 Direct │    │ 🔵 Vectorstore│    │ 🌐 Web Search │
-│   LLM     │    │   Path       │    │   (Tavily)    │
-│  (no RAG) │    │              │    │               │
-└──────────┘    └──────────────┘    └──────────────┘
-    │                    │                    │
-    ▼                    ▼                    ▼
-   END          ┌──────────────┐        Generate
-                │ ✏️ Rewriter   │            │
-                │ (chat context)│            ▼
-                └──────────────┘      Self-RAG checks
-                        │                    │
-                        ▼                   END
-                ┌──────────────┐
-                │ 📥 Retrieve   │
-                │  (FAISS, k=10)│
-                └──────────────┘
-                        │
-                        ▼
-                ┌──────────────────────────────────────┐
-                │ 🟢 CORRECTIVE RAG: Grade Documents    │
-                │     LLM grades each doc (relevant?)   │
-                └──────────────────────────────────────┘
-                   │                          │
-                   ▼                          ▼
-              Has relevant docs         All irrelevant
-                   │                          │
-                   ▼                     ┌────┴────┐
-              📊 Rerank                  │ 1st try? │
-                   │                     ├─ Yes ────→ 🔄 Corrective Rewrite → Retrieve (retry)
-                   ▼                     └─ No ─────→ 🌐 Web Search fallback
-              ⚡ Generate
-                   │
-                   ▼
-                ┌──────────────────────────────────────┐
-                │ 🟡 SELF-RAG: Hallucination Check      │
-                │     Is answer grounded in sources?     │
-                │     ↓ No → retry (max 3)               │
-                └──────────────────────────────────────┘
-                        │
-                        ▼
-                ┌──────────────────────────────────────┐
-                │ 🟡 SELF-RAG: Answer Quality Grader    │
-                │     Does answer address the question?  │
-                │     ↓ No → retry (max 3)               │
-                └──────────────────────────────────────┘
-                        │
-                        ▼
-                      END
-```
+ 
 
 ---
 
